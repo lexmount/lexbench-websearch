@@ -63,5 +63,11 @@ def rebuild_dataset(csv_bytes):
         "id": "factual-v1",
         "cases": cases,
         "reference_checks": {},
-        "reference_artifacts": {SOURCE_URL: {"sha256": SOURCE_SHA256}},
+        "reference_artifacts": {
+            SOURCE_URL: {
+                "sha256": SOURCE_SHA256,
+                "license": "MIT",
+                "scope": "Frozen publisher-provided answers and supporting URLs; source URL hits are not exhaustive relevance judgments",
+            }
+        },
     }

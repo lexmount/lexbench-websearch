@@ -37,3 +37,13 @@ def test_duplicate_publisher_ids_rejected():
 def test_builder_rejects_unpinned_csv_before_selection():
     with pytest.raises(ValueError, match="SHA256"):
         rebuild_dataset(csv_fixture(["one"]))
+
+
+def test_builder_retains_source_artifact_metadata(monkeypatch):
+    from lexbench_websearch import simpleqa
+
+    raw = csv_fixture(["one"])
+    monkeypatch.setattr(simpleqa, "SOURCE_SHA256", simpleqa.digest(raw))
+    # Correctly hashed but partial publisher inputs must still be rejected.
+    with pytest.raises(ValueError, match="Frozen population"):
+        simpleqa.rebuild_dataset(raw)
