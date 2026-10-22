@@ -5,7 +5,7 @@ import json
 
 from .scoring import canonical_url, evaluate, normalize_results as normalize
 from .contracts import validate_cases
-from .inputs import definition_path
+from .inputs import definition_path, digest
 from .answer_rules import POLICY_NAME, match_reference_answer
 
 
@@ -43,6 +43,10 @@ def validate_regressions(record):
                 from .evidence_quality import is_benchmark_page
 
                 actual = is_benchmark_page(control["result"], case=control["case"])
+            elif control["kind"] == "relevance_source":
+                from .relevance import source_rule_control
+
+                actual = source_rule_control(control)
             elif control["kind"] == "source":
                 from .relevance import candidate_packet
 
@@ -135,14 +139,68 @@ def _equivalent(a, b):
     )
 
 
-def apply_report_revision(profile, rows, revision):
+def normalization_regressions(expected_sha256, normalizer):
+    """Exercise frozen projection controls through the execution owner's adapter."""
+    path = definition_path("native-normalization-regressions.json")
+    if digest(path.read_bytes()) != expected_sha256:
+        raise ValueError("Normalization regression binding mismatch")
+    if not callable(normalizer):
+        raise ValueError("Native normalization requires the execution adapter")
+    for group in json.loads(path.read_bytes())["regressions"]:
+        for control in group["controls"]:
+            try:
+                results = normalizer(
+                    control["payload"],
+                    control["method"],
+                    control["protocol"],
+                    control["request"],
+                )
+            except ValueError:
+                if control["error"]:
+                    continue
+                raise
+            if (
+                control["error"]
+                or [r["url"] for r in results] != control["expected_urls"]
+            ):
+                raise ValueError("Normalization regression failed: " + control["id"])
+            metrics = evaluate(control["case"], results)
+            if any(metrics[k] != v for k, v in control["expected_metrics"].items()):
+                raise ValueError("Task metric regression failed: " + control["id"])
+
+
+def validate_revision_controls(revision, normalizer=None):
+    if not revision.get("normalization"):
+        validate_regressions(revision)
+        return
+    native = {"relative-serp-links", "unsafe-serp-links", "top-five-boundary"}
+    ids = revision.get("regression_ids", [])
+    if (
+        revision["normalization"] != "request-url/1"
+        or not native.issubset(ids)
+        or len(ids) != len(set(ids))
+        or not revision.get("root_cause")
+    ):
+        raise ValueError(
+            "Native normalization revision needs paired URL and cutoff controls"
+        )
+    shared = [i for i in ids if i not in native]
+    if shared:
+        validate_regressions(dict(revision, regression_ids=shared))
+    normalization_regressions(revision.get("regressions_sha256"), normalizer)
+
+
+def apply_report_revision(profile, rows, revision, *, artifacts=None, normalizer=None):
     """Add independently observed reference annotations to immutable saved calls."""
     if revision.get("schema") != "web-search-assessment-revision/1":
         raise ValueError("Unsupported assessment revision")
-    validate_regressions(revision)
+    validate_revision_controls(revision, normalizer)
     if revision.get("provider_calls") != 0:
         raise ValueError("An annotation revision cannot introduce provider calls")
     revised = deepcopy(profile)
+    normalization = revision.get("normalization")
+    if normalization:
+        revised["protocol"]["result_url_resolution"] = normalization
     cases = {c["id"]: c for c in revised["cases"]}
     seen = set()
     for item in revision.get("cases", []):
@@ -163,15 +221,128 @@ def apply_report_revision(profile, rows, revision):
         for case in cases.values():
             if case.get("reference_answer"):
                 case["answer_match_rule"] = revision["answer_match_rule"]
+    if revision.get("answer_match_rule") == POLICY_NAME:
+        from .answer_rules import RULE_VERSION, reference_rule
+
+        annotated = any(
+            "annotation_cleanup" in reference_rule(c["reference_answer"])
+            for c in cases.values()
+            if "reference_answer" in c
+        )
+        if annotated and (
+            revision.get("answer_annotation_rule") != RULE_VERSION
+            or "published-answer-citation-metadata" not in revision["regression_ids"]
+        ):
+            raise ValueError(
+                "Reference citation cleanup requires a bound scoring revision"
+            )
+    exclusions = []
+    for item in revision.get("reference_adjudications", []):
+        cid = item["case_id"]
+        case = cases.get(cid, {})
+        if (
+            cid in exclusions
+            or "reference_answer" not in case
+            or item.get("query") != case.get("query")
+            or item.get("reference_answer") != case["reference_answer"]
+            or item.get("quality_excluded") is not True
+            or not item.get("reason")
+            or not item.get("evidence")
+        ):
+            raise ValueError(
+                "Reference adjudication does not bind the unchanged factual case"
+            )
+        exclusions.append(cid)
+    if exclusions:
+        revised["factual_quality_exclusions"] = sorted(exclusions)
+        revised["reference_adjudications"] = revision["reference_adjudications"]
     updated, changes = [], []
     for row in rows:
-        new = {**row, "metrics": evaluate(cases[row["case_id"]], row["results"])}
-        if new["metrics"] != row["metrics"]:
-            changes.append(
-                {"id": row["id"], "before": row["metrics"], "after": new["metrics"]}
-            )
+        new = dict(row)
+        if (
+            normalization
+            and row["http_status"] == 200
+            and not row.get("transport_exit")
+        ):
+            path = row["evidence"]["path"]
+            if (
+                artifacts is None
+                or path not in artifacts
+                or digest(artifacts[path]) != row["evidence"]["sha256"]
+            ):
+                raise ValueError("Native artifact binding mismatch")
+            try:
+                method = next(m for m in revised["methods"] if m["id"] == row["method"])
+                new["results"] = normalizer(
+                    json.loads(artifacts[path]),
+                    method,
+                    revised["protocol"],
+                    row.get("request"),
+                )
+                new["error"] = ""
+            except (ValueError, TypeError, AttributeError, KeyError):
+                # Preserve the original failed response and its unchanged evidence.
+                new = dict(row)
+        new["metrics"] = evaluate(cases[row["case_id"]], new["results"])
+        if (
+            new["metrics"] != row["metrics"]
+            or new["results"] != row["results"]
+            or new.get("error") != row.get("error")
+        ):
+            change = {
+                "id": row["id"],
+                "before": row["metrics"],
+                "after": new["metrics"],
+            }
+            if normalization:
+                change["normalization"] = {
+                    "before_sha256": digest(
+                        json.dumps(
+                            row["results"], sort_keys=True, ensure_ascii=False
+                        ).encode()
+                    ),
+                    "after_sha256": digest(
+                        json.dumps(
+                            new["results"], sort_keys=True, ensure_ascii=False
+                        ).encode()
+                    ),
+                    "before_count": len(row["results"]),
+                    "after_count": len(new["results"]),
+                    "before_error": row.get("error"),
+                    "after_error": new.get("error"),
+                }
+            changes.append(change)
         updated.append(new)
     return revised, updated, changes
+
+
+def collected_projection(profile, rows, artifacts, normalizer):
+    """Reconstruct collection projections through the frozen execution adapter."""
+    cases = {c["id"]: c for c in profile["cases"]}
+    methods = {m["id"]: m for m in profile["methods"]}
+    restored = []
+    for row in rows:
+        original = dict(row, results=[])
+        if row["http_status"] == 200 and not row.get("transport_exit"):
+            path = row["evidence"]["path"]
+            if (
+                path not in artifacts
+                or digest(artifacts[path]) != row["evidence"]["sha256"]
+            ):
+                raise ValueError("Native artifact binding mismatch")
+            try:
+                original["results"] = normalizer(
+                    json.loads(artifacts[path]),
+                    methods[row["method"]],
+                    profile["protocol"],
+                    row.get("request"),
+                )
+                original["error"] = ""
+            except (ValueError, TypeError, AttributeError, KeyError) as exc:
+                original["error"] = str(exc)
+        original["metrics"] = evaluate(cases[row["case_id"]], original["results"])
+        restored.append(original)
+    return restored
 
 
 def apply_identity_correction(profile, rows, correction):
@@ -208,7 +379,7 @@ def apply_identity_correction(profile, rows, correction):
 REVISION_AUTHORITY_PATH = definition_path("assessment-revisions.json")
 
 
-def validate_revision_binding(revision):
+def validate_revision_binding(revision, *, normalizer=None):
     """Reader prose cannot introduce or modify an approved scoring revision."""
     from .inputs import digest
 
@@ -223,4 +394,4 @@ def validate_revision_binding(revision):
         raise ValueError(
             "Assessment revision is not bound by the versioned scoring authority"
         )
-    validate_regressions(revision)
+    validate_revision_controls(revision, normalizer)

@@ -10,7 +10,7 @@ from decimal import Decimal
 
 # Frozen input policy and algorithm receipt have separate version identities.
 POLICY_NAME = "published-answers/2"
-RULE_VERSION = "reference-answer-evidence/1"
+RULE_VERSION = "reference-answer-evidence/2"
 NUMBER = r"[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?"
 
 
@@ -58,9 +58,22 @@ def _phrase(text, phrase):
     return False
 
 
+def _reference_text(reference):
+    """Separate citation metadata while preserving answers that are URLs."""
+    value = reference.strip()
+    if not re.match(r"https?://", value, re.I):
+        fused = re.fullmatch(r"(.+[\w])https?://[^\s]+", value, re.I)
+        if fused:
+            value = fused[1].rstrip()
+        citation = re.fullmatch(r"(.+?)\s*(?:\[\d+\])+", value)
+        if citation and citation[1].strip():
+            value = citation[1].rstrip()
+    return value
+
+
 def reference_rule(reference):
     """Return a JSON-serializable derivation; unknown annotations are explicit."""
-    value = reference.strip()
+    value = _reference_text(reference)
     rule = {
         "version": RULE_VERSION,
         "reference": reference,
@@ -68,6 +81,11 @@ def reference_rule(reference):
         "alternatives": [value],
         "unsupported_annotation": None,
     }
+    if value != reference.strip():
+        rule["annotation_cleanup"] = {
+            "derived_answer": value,
+            "kind": "terminal-citation-metadata",
+        }
     annotation = re.fullmatch(r"(.+?)\s*\(acceptable range:\s*(.+)\)", value, re.I)
     if annotation:
         base, body = annotation.groups()

@@ -127,6 +127,34 @@
         ]
       },
       "expected": false
+    },
+    {
+      "kind": "anchor",
+      "case": {
+        "family": "web",
+        "anchors": [
+          "https://docs.test/page.html"
+        ],
+        "identity_aliases": {
+          "https://docs.test/page": "https://docs.test/page.html"
+        }
+      },
+      "url": "https://docs.test/page",
+      "expected": true
+    },
+    {
+      "kind": "anchor",
+      "case": {
+        "family": "web",
+        "anchors": [
+          "https://docs.test/page.html"
+        ],
+        "identity_aliases": {
+          "https://docs.test/page": "https://docs.test/page.html"
+        }
+      },
+      "url": "https://docs.test/page?id=other",
+      "expected": false
     }
   ],
   "different-page-proof-rejected": [
@@ -480,6 +508,154 @@
       "right": {
         "text_sha256": "same"
       },
+      "expected": false
+    }
+  ],
+  "relevance-official-source-required": [
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "official",
+        "family": "web",
+        "query": "Trouvez le site officiel du projet"
+      },
+      "requirements": {
+        "domains": [
+          "project.test"
+        ]
+      },
+      "url": "https://project.test/docs",
+      "expected": true
+    },
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "official",
+        "family": "web",
+        "query": "プロジェクトの公式サイト"
+      },
+      "requirements": {
+        "domains": [
+          "project.test"
+        ]
+      },
+      "url": "https://community.test/project",
+      "expected": false
+    }
+  ],
+  "relevance-official-source-alternatives": [
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "alternative",
+        "family": "web",
+        "query": "Find official installation documentation",
+        "domains": [
+          "project.test"
+        ]
+      },
+      "requirements": {
+        "domains": [
+          "project.test",
+          "project-docs.test"
+        ]
+      },
+      "url": "https://project-docs.test/install",
+      "expected": true
+    },
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "alternative",
+        "family": "web",
+        "query": "Find official installation documentation",
+        "domains": [
+          "project.test"
+        ]
+      },
+      "requirements": {
+        "domains": [
+          "project.test",
+          "project-docs.test"
+        ]
+      },
+      "url": "https://project-docs.test.community.test/install",
+      "expected": false
+    }
+  ],
+  "relevance-explicit-platform-scope": [
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "platform",
+        "family": "web",
+        "query": "Find community discussions on Forum"
+      },
+      "requirements": {
+        "domains": [
+          "forum.test"
+        ]
+      },
+      "url": "https://forum.test/thread",
+      "expected": true
+    },
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "platform",
+        "family": "web",
+        "query": "Find community discussions on Forum"
+      },
+      "requirements": {
+        "domains": [
+          "forum.test"
+        ]
+      },
+      "url": "https://forum.test.other.test/thread",
+      "expected": false
+    }
+  ],
+  "published-answer-citation-metadata": [
+    {
+      "kind": "answer",
+      "answer": "Study of Sandwich Beams[1]",
+      "text": "Study of Sandwich Beams",
+      "expected": true
+    },
+    {
+      "kind": "answer",
+      "answer": "Study of Sandwich Beams[1]",
+      "text": "Study of Beams",
+      "expected": false
+    },
+    {
+      "kind": "answer",
+      "answer": "Whitehttps://source.test/flags#ref",
+      "text": "White",
+      "expected": true
+    },
+    {
+      "kind": "answer",
+      "answer": "Whitehttps://source.test/flags#ref",
+      "text": "Black",
+      "expected": false
+    },
+    {
+      "kind": "answer",
+      "answer": "https://source.test/white",
+      "text": "white",
+      "expected": false
+    },
+    {
+      "kind": "answer",
+      "answer": "150[1]",
+      "text": "150 people",
+      "expected": true
+    },
+    {
+      "kind": "answer",
+      "answer": "150[1]",
+      "text": "150%",
       "expected": false
     }
   ]

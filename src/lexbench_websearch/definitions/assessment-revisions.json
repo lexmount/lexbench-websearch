@@ -2,7 +2,8 @@
   "schema": "search-assessment-authority/1",
   "approved_sha256": [
     "ce69db0c91878f18c3c478f5d8a345b3c9c20dca114b47740482d3d2396008df",
-    "1e0d63c7acd46d7e3891ea7515abba5771d0893a970c083e88474b3cd046696e"
+    "1e0d63c7acd46d7e3891ea7515abba5771d0893a970c083e88474b3cd046696e",
+    "6830f5e4b6c45ad67e453a26861ed026a8487883f6bc7701ecc94dafd5796c78"
   ],
   "provenance": [
     {
