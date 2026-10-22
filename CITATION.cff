@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "Please cite LexBench Web Search and the upstream datasets used in your evaluation."
+title: "LexBench Web Search"
+type: software
+version: 0.1.0
+authors:
+  - family-names: LexMount
+repository-code: "https://github.com/lexmount/lexbench-websearch"
+license: MIT

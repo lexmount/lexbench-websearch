@@ -1,0 +1,23 @@
+name: Checks
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --frozen
+      - run: make check
+      - run: make package-check
+      - name: Test installed wheel outside checkout
+        run: |
+          uv venv /tmp/lexbench-wheel --python ${{ matrix.python }}
+          uv pip install --python /tmp/lexbench-wheel/bin/python dist/*.whl pytest
+          cp -R tests /tmp/lexbench-installed-tests
+          cd /tmp
+          /tmp/lexbench-wheel/bin/python -m pytest lexbench-installed-tests -q --import-mode=importlib

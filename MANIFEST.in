@@ -1,0 +1,3 @@
+include LICENSE THIRD_PARTY.md CITATION.cff provenance.json
+recursive-include docs *.md
+recursive-include src/lexbench_websearch/definitions *.json *.txt
