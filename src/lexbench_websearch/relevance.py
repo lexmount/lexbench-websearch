@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 from .scoring import candidate_identity, canonical_url, in_domain
+from .inputs import definition_path
 
 
 def _gain(grade, rank):
@@ -105,11 +106,18 @@ def summary(scored, methods):
 
 
 def candidate_packet(
-    profile, rows, source_requirements=None, *, source_policy="explicit-source/2"
+    profile,
+    rows,
+    source_requirements=None,
+    *,
+    source_policy="explicit-source/2",
+    packet_format="search/1",
 ):
     """Pool every in-house query without method names, rankings or generated grades."""
     if source_policy not in ("legacy-domain-intersection/1", "explicit-source/2"):
         raise ValueError("Unsupported relevance source policy")
+    if packet_format not in ("search/1", "serp/1"):
+        raise ValueError("Unsupported frozen candidate packet format")
     case_ids = [c["id"] for c in profile["cases"] if "reference_answer" not in c]
     cutoff = profile["protocol"]["top_k"]
     indexed = {(r["case_id"], r["method"]): r for r in rows}
@@ -132,7 +140,7 @@ def candidate_packet(
             ranking = []
             for item in indexed[cid, method["id"]]["results"][:cutoff]:
                 url = canonical_url(item["url"])
-                key = candidate_identity(cid, url)
+                key = hashlib.sha256((cid + "\0" + url).encode()).hexdigest()[:12]
                 ranking.append(key)
                 candidate = pool.setdefault(
                     key, {"candidate_id": key, "url": url, "previews": []}
@@ -150,6 +158,8 @@ def candidate_packet(
                 restrict_domain = (
                     source_policy == "legacy-domain-intersection/1"
                     or case["family"] == "site"
+                    or packet_format == "serp/1"
+                    and bool(case.get("source"))
                 )
                 domain_ok = (
                     not restrict_domain
@@ -171,7 +181,9 @@ def candidate_packet(
             {
                 "case_id": cid,
                 "query": case["query"],
-                "required_domains": case.get("domains", []),
+                "required_domains": case.get("domains", [])
+                if packet_format != "serp/1" or case["family"] == "site"
+                else [],
                 "candidates": [pool[k] for k in sorted(pool)],
             }
         )
@@ -188,7 +200,73 @@ def candidate_packet(
         and source_policy != "legacy-domain-intersection/1"
     ):
         blind["source_policy"] = source_policy
+    if packet_format == "serp/1" and source_requirements is not None:
+        blind["source_requirements"] = source_requirements
     blind["packet_sha256"] = hashlib.sha256(
         json.dumps(blind, ensure_ascii=False, sort_keys=True).encode()
     ).hexdigest()
     return blind, rankings
+
+
+SOURCE_RULE_REGRESSIONS = (
+    "relevance-official-source-required",
+    "relevance-official-source-alternatives",
+    "relevance-explicit-platform-scope",
+)
+
+
+def validate_source_rule_regressions(ids):
+    """Exercise paired source decisions through pooling and public relevance scores."""
+    registry = json.loads(definition_path("scoring-regressions.json").read_text())
+    if (
+        not isinstance(ids, list)
+        or len(ids) != len(set(ids))
+        or not set(SOURCE_RULE_REGRESSIONS).issubset(ids)
+    ):
+        raise ValueError(
+            "Source correction requires paired production regression provenance"
+        )
+    for identity in ids:
+        controls = registry.get(identity, [])
+        if not controls or {c.get("expected") for c in controls} != {True, False}:
+            raise ValueError(
+                "Source correction requires paired production regression controls"
+            )
+        for control in controls:
+            if control.get("kind") != "relevance_source":
+                raise ValueError("Unsupported source correction regression control")
+            if source_rule_control(control) != control["expected"]:
+                raise ValueError("Source correction regression failed: " + identity)
+
+
+def source_rule_control(control):
+    """Run one source control through the same pool and query metrics as a report."""
+    case = control["case"]
+    profile = {
+        "protocol": {"top_k": 1},
+        "methods": [{"id": "control"}],
+        "cases": [case],
+    }
+    rows = [
+        {
+            "case_id": case["id"],
+            "method": "control",
+            "results": [{"url": control["url"], "snippet": "Directly useful content"}],
+        }
+    ]
+    packet, _ = candidate_packet(
+        profile, rows, {case["id"]: control["requirements"]}, packet_format="serp/1"
+    )
+    candidate = packet["blind_candidate_packets"][0]["candidates"][0]
+    labels = {
+        case["id"]: {
+            candidate["candidate_id"]: 3 if candidate["source_eligible"] else 0
+        }
+    }
+    metrics = score(profile, rows, packet["plan"], labels)[0]
+    if any(
+        metrics[key] != float(candidate["source_eligible"])
+        for key in ("success", "precision", "ndcg")
+    ):
+        raise ValueError("Source eligibility and public relevance metrics disagree")
+    return candidate["source_eligible"]

@@ -9,3 +9,5 @@ Code, comments and guides use English. Preserve the original language of dataset
 Commit reusable source, compact definitions, acceptance contracts and provenance. Keep measured outputs, API credentials, captures, generated reports and internal work notes outside Git. Do not add provider calls to the benchmark package.
 
 Use feature branches and PRs. Do not merge PRs, push to main or force push.
+
+Version changes require an explicit human release request. Routine synchronization, fixes, tests and report rebuilds must not bump package or benchmark versions, rewrite frozen release catalogs, or create/push tags. Keep unreleased scoring changes distinct from frozen editions; retain strict verification before a requested release.

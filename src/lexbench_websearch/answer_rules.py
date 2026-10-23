@@ -10,7 +10,7 @@ from decimal import Decimal
 
 # Frozen input policy and algorithm receipt have separate version identities.
 POLICY_NAME = "published-answers/2"
-RULE_VERSION = "reference-answer-evidence/1"
+RULE_VERSION = "reference-answer-evidence/3"
 NUMBER = r"[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?"
 
 
@@ -58,9 +58,45 @@ def _phrase(text, phrase):
     return False
 
 
-def reference_rule(reference):
-    """Return a JSON-serializable derivation; unknown annotations are explicit."""
+def _reference_text(reference, derivation=None):
+    """Separate citation metadata while preserving answers that are URLs."""
     value = reference.strip()
+    if derivation is None:
+        return value
+    if not re.match(r"https?://", value, re.I):
+        fused = re.fullmatch(r"(.+[\w])https?://[^\s]+", value, re.I)
+        if fused:
+            value = fused[1].rstrip()
+        citation = re.fullmatch(r"(.+?)\s*(?:\[\d+\])+", value)
+        if citation and citation[1].strip():
+            value = citation[1].rstrip()
+    from urllib.parse import urlsplit
+
+    sources = derivation.get("sources", [])
+    if (
+        derivation.get("reference") != reference
+        or derivation.get("kind") != "terminal-citation-metadata"
+        or value == reference.strip()
+        or derivation.get("derived_answer") != value
+        or not derivation.get("qualification")
+        or not sources
+        or not any(
+            isinstance(source, dict)
+            and urlsplit(source.get("url", "")).scheme == "https"
+            and urlsplit(source.get("url", "")).netloc
+            and _phrase(source.get("excerpt", ""), value)
+            for source in sources
+        )
+    ):
+        raise ValueError(
+            "Answer derivation must bind the reference and independent source"
+        )
+    return value
+
+
+def reference_rule(reference, *, derivation=None):
+    """Return a JSON-serializable derivation; unknown annotations are explicit."""
+    value = _reference_text(reference, derivation)
     rule = {
         "version": RULE_VERSION,
         "reference": reference,
@@ -68,6 +104,11 @@ def reference_rule(reference):
         "alternatives": [value],
         "unsupported_annotation": None,
     }
+    if value != reference.strip():
+        rule["annotation_cleanup"] = {
+            "derived_answer": value,
+            "kind": "terminal-citation-metadata",
+        }
     annotation = re.fullmatch(r"(.+?)\s*\(acceptable range:\s*(.+)\)", value, re.I)
     if annotation:
         base, body = annotation.groups()
@@ -164,9 +205,9 @@ def _numeric_matches(text, unit):
     return re.finditer(pattern, _norm(text))
 
 
-def match_reference_answer(reference, text):
+def match_reference_answer(reference, text, *, derivation=None):
     """Whether text contains explicitly allowed reference evidence (not truth)."""
-    rule = reference_rule(reference)
+    rule = reference_rule(reference, derivation=derivation)
     if rule["kind"] == "numeric_range":
         low, high = Decimal(rule["lower"]), Decimal(rule["upper"])
         normalized = _norm(text)

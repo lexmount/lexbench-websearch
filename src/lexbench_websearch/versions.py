@@ -168,13 +168,14 @@ def create_release(
     return release
 
 
-def verify_release(release, dataset):
+def verify_release(release, dataset, *, verify_scorer=True):
     _validate(release)
     expected = {
         "dataset_sha256": _hash(dataset),
         **_contracts(dataset),
-        "scoring_source_sha256": scoring_source_sha256(),
     }
+    if verify_scorer:
+        expected["scoring_source_sha256"] = scoring_source_sha256()
     if any(release.get(key) != value for key, value in expected.items()):
         raise ValueError("Frozen dataset or scoring contract changed")
 
@@ -188,7 +189,7 @@ def freeze_release(dataset_path, output, **options):
     return release
 
 
-def catalog_release(path=None):
+def catalog_release(path=None, *, require_current_scorer=True):
     selected = path if path is not None else definition_path("benchmark-release.json")
     if selected.is_symlink():
         raise ValueError("Catalog cannot be a symlink")
@@ -206,5 +207,18 @@ def catalog_release(path=None):
     for identity, binding in release["datasets"].items():
         if binding.get("version") != release["version"]:
             raise ValueError("Dataset edition differs from the catalog")
-        verify_release(binding, load_dataset(identity))
+        verify_release(
+            binding, load_dataset(identity), verify_scorer=require_current_scorer
+        )
+    if not require_current_scorer:
+        current = scoring_source_sha256()
+        release["development"] = {
+            "scoring_status": "released"
+            if all(
+                b["scoring_source_sha256"] == current
+                for b in release["datasets"].values()
+            )
+            else "unreleased",
+            "scoring_source_sha256": current,
+        }
     return release

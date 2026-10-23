@@ -46,6 +46,23 @@ def resolve_profile(profile):
     profile = dict(profile)
     for field in ("cases", "reference_checks", "reference_artifacts"):
         value = profile.get(field)
+        if isinstance(value, dict) and "benchmark_datasets" in value:
+            if (
+                field != "cases"
+                or value.get("field") != field
+                or not value["benchmark_datasets"]
+            ):
+                raise ValueError("Benchmark composition must name case datasets")
+            combined = []
+            for binding in value["benchmark_datasets"]:
+                identity = binding["id"]
+                if binding.get("sha256") != registry()["datasets"][identity]["sha256"]:
+                    raise ValueError("Benchmark field binding mismatch")
+                combined.extend(load_dataset(identity)[field])
+            if len({case["id"] for case in combined}) != len(combined):
+                raise ValueError("Benchmark composition contains duplicate cases")
+            profile[field] = combined
+            continue
         if isinstance(value, dict) and "benchmark_dataset" in value:
             identity = value["benchmark_dataset"]
             if (

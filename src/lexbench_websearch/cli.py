@@ -36,7 +36,7 @@ def main():
     if args.command == "version":
         from .versions import catalog_release
 
-        value = catalog_release()
+        value = catalog_release(require_current_scorer=False)
     elif args.command == "release":
         from .versions import freeze_release
 

@@ -127,6 +127,34 @@
         ]
       },
       "expected": false
+    },
+    {
+      "kind": "anchor",
+      "case": {
+        "family": "web",
+        "anchors": [
+          "https://docs.test/page.html"
+        ],
+        "identity_aliases": {
+          "https://docs.test/page": "https://docs.test/page.html"
+        }
+      },
+      "url": "https://docs.test/page",
+      "expected": true
+    },
+    {
+      "kind": "anchor",
+      "case": {
+        "family": "web",
+        "anchors": [
+          "https://docs.test/page.html"
+        ],
+        "identity_aliases": {
+          "https://docs.test/page": "https://docs.test/page.html"
+        }
+      },
+      "url": "https://docs.test/page?id=other",
+      "expected": false
     }
   ],
   "different-page-proof-rejected": [
@@ -480,6 +508,246 @@
       "right": {
         "text_sha256": "same"
       },
+      "expected": false
+    }
+  ],
+  "relevance-official-source-required": [
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "official",
+        "family": "web",
+        "query": "Trouvez le site officiel du projet"
+      },
+      "requirements": {
+        "domains": [
+          "project.test"
+        ]
+      },
+      "url": "https://project.test/docs",
+      "expected": true
+    },
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "official",
+        "family": "web",
+        "query": "プロジェクトの公式サイト"
+      },
+      "requirements": {
+        "domains": [
+          "project.test"
+        ]
+      },
+      "url": "https://community.test/project",
+      "expected": false
+    }
+  ],
+  "relevance-official-source-alternatives": [
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "alternative",
+        "family": "web",
+        "query": "Find official installation documentation",
+        "domains": [
+          "project.test"
+        ]
+      },
+      "requirements": {
+        "domains": [
+          "project.test",
+          "project-docs.test"
+        ]
+      },
+      "url": "https://project-docs.test/install",
+      "expected": true
+    },
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "alternative",
+        "family": "web",
+        "query": "Find official installation documentation",
+        "domains": [
+          "project.test"
+        ]
+      },
+      "requirements": {
+        "domains": [
+          "project.test",
+          "project-docs.test"
+        ]
+      },
+      "url": "https://project-docs.test.community.test/install",
+      "expected": false
+    }
+  ],
+  "relevance-explicit-platform-scope": [
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "platform",
+        "family": "web",
+        "query": "Find community discussions on Forum"
+      },
+      "requirements": {
+        "domains": [
+          "forum.test"
+        ]
+      },
+      "url": "https://forum.test/thread",
+      "expected": true
+    },
+    {
+      "kind": "relevance_source",
+      "case": {
+        "id": "platform",
+        "family": "web",
+        "query": "Find community discussions on Forum"
+      },
+      "requirements": {
+        "domains": [
+          "forum.test"
+        ]
+      },
+      "url": "https://forum.test.other.test/thread",
+      "expected": false
+    }
+  ],
+  "published-answer-citation-metadata": [
+    {
+      "kind": "answer",
+      "answer": "Study of Sandwich Beams[1]",
+      "text": "Study of Sandwich Beams",
+      "expected": true,
+      "derivation": {
+        "reference": "Study of Sandwich Beams[1]",
+        "derived_answer": "Study of Sandwich Beams",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "Study of Sandwich Beams"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "answer",
+      "answer": "Study of Sandwich Beams[1]",
+      "text": "Study of Beams",
+      "expected": false,
+      "derivation": {
+        "reference": "Study of Sandwich Beams[1]",
+        "derived_answer": "Study of Sandwich Beams",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "Study of Sandwich Beams"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "answer",
+      "answer": "Whitehttps://source.test/flags#ref",
+      "text": "White",
+      "expected": true,
+      "derivation": {
+        "reference": "Whitehttps://source.test/flags#ref",
+        "derived_answer": "White",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "White"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "answer",
+      "answer": "Whitehttps://source.test/flags#ref",
+      "text": "Black",
+      "expected": false,
+      "derivation": {
+        "reference": "Whitehttps://source.test/flags#ref",
+        "derived_answer": "White",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "White"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "answer",
+      "answer": "https://source.test/white",
+      "text": "white",
+      "expected": false
+    },
+    {
+      "kind": "answer",
+      "answer": "150[1]",
+      "text": "150 people",
+      "expected": true,
+      "derivation": {
+        "reference": "150[1]",
+        "derived_answer": "150",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "150"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "answer",
+      "answer": "150[1]",
+      "text": "150%",
+      "expected": false,
+      "derivation": {
+        "reference": "150[1]",
+        "derived_answer": "150",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "150"
+          }
+        ]
+      }
+    }
+  ],
+  "literal-bracketed-answer": [
+    {
+      "kind": "answer",
+      "answer": "v[0]",
+      "text": "v[0]",
+      "expected": true
+    },
+    {
+      "kind": "answer",
+      "answer": "v[0]",
+      "text": "v[1]",
+      "expected": false
+    },
+    {
+      "kind": "answer",
+      "answer": "v[0]",
+      "text": "v",
       "expected": false
     }
   ]

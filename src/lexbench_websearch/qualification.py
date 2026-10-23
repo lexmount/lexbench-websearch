@@ -33,7 +33,11 @@ def validate_regressions(record):
             )
         for control in controls:
             if control["kind"] == "answer":
-                actual = match_reference_answer(control["answer"], control["text"])
+                actual = match_reference_answer(
+                    control["answer"],
+                    control["text"],
+                    derivation=control.get("derivation"),
+                )
             elif control["kind"] == "anchor":
                 actual = bool(
                     evaluate(
@@ -45,6 +49,10 @@ def validate_regressions(record):
                 from .evidence_quality import is_benchmark_page
 
                 actual = is_benchmark_page(control["result"], case=control["case"])
+            elif control["kind"] == "relevance_source":
+                from .relevance import source_rule_control
+
+                actual = source_rule_control(control)
             elif control["kind"] == "source":
                 from .relevance import candidate_packet
 
@@ -80,6 +88,7 @@ def validate_regressions(record):
                     case = {
                         "reference_answer": control["answer"],
                         "answer_match_rule": "published-answers/2",
+                        "answer_derivation": control.get("derivation"),
                     }
                     results = [
                         {"url": "https://docs.test/fact", "snippet": control["text"]}

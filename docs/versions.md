@@ -21,14 +21,15 @@ billing. Those controls belong to the execution harness. A minor correction
 preserves the task's purpose; adding a different quality dimension calls for a
 major edition even if the automatic fingerprints alone would permit a minor.
 
+Version changes are manual. Code synchronization, bug fixes, tests and report rebuilds do not increment versions, rewrite the release catalog, or create tags. Prepare or publish an edition only after an explicit human release request. Until then, the catalog retains its frozen edition and source inspection reports changed scoring as `unreleased`. Strict release verification continues to reject that mismatch.
+
 ## Inspect the installed release
 
 ```sh
 uv run --frozen lexbench-websearch version
 ```
 
-This verifies `definitions/benchmark-release.json` against every installed
-dataset and the scoring source. The catalog records each dataset separately,
+This checks the frozen catalog against every installed dataset and reports whether the installed scoring source matches it. Inspection is read-only and does not certify changed scoring as the frozen edition. The catalog records each dataset separately,
 including historical snapshots. It contains no provider results, report text,
 credentials or publication targets.
 
