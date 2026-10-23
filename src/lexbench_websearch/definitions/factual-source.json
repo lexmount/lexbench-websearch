@@ -1,0 +1,35 @@
+{
+  "schema": "lexbench-csv-source/1",
+  "dataset": "factual-v1",
+  "url": "https://huggingface.co/datasets/google/simpleqa-verified/resolve/ed392714d14fa5225b07c2b456453983bc75f690/simpleqa_verified.csv",
+  "sha256": "fb990cca0fae8515ae2f51b794d5fa791d095c1f919ecdbe22d0c1642e9ab966",
+  "license": "MIT",
+  "scope": "Frozen publisher-provided answers and supporting URLs; source URL hits are not exhaustive relevance judgments",
+  "selection": {
+    "max_query_characters": 128,
+    "source_count": 1000,
+    "selected_count": 831
+  },
+  "case": {
+    "id_prefix": "sqv-",
+    "family": "web",
+    "category": "factual",
+    "language": "en",
+    "provenance_kind": "public_labeled",
+    "derivation": "Unchanged question; all publisher questions of at most 128 Unicode characters are included"
+  },
+  "case_field_order": [
+    "id",
+    "family",
+    "category",
+    "language",
+    "query",
+    "origin",
+    "provenance_kind",
+    "derivation",
+    "reference_answer",
+    "reference_urls",
+    "topic",
+    "answer_type"
+  ]
+}

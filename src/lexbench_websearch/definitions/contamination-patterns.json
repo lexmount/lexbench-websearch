@@ -1,0 +1,4 @@
+{
+  "identity_patterns": ["simple[\\s_\\-]*qa"],
+  "body_patterns": ["simple[\\s_\\-]*qa", "super[\\s_\\-]*gpqa"]
+}
