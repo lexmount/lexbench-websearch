@@ -11,6 +11,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("list")
+    commands.add_parser("version")
+    release = commands.add_parser("release")
+    release.add_argument("--dataset", type=Path, required=True)
+    release.add_argument("--output", type=Path, required=True)
+    release.add_argument("--version", required=True)
+    release.add_argument("--scorer-revision", required=True)
+    release.add_argument("--previous", type=Path)
+    release.add_argument("--change-note")
+    compare = commands.add_parser("compare-releases")
+    compare.add_argument("left", type=Path)
+    compare.add_argument("right", type=Path)
     for command in ("validate", "export"):
         sub = commands.add_parser(command)
         sub.add_argument("dataset", choices=list(registry()["datasets"]))
@@ -22,7 +33,28 @@ def main():
         "input", type=Path, help="JSON with ranking, grades and optional cutoff"
     )
     args = parser.parse_args()
-    if args.command == "list":
+    if args.command == "version":
+        from .versions import catalog_release
+
+        value = catalog_release()
+    elif args.command == "release":
+        from .versions import freeze_release
+
+        value = freeze_release(
+            args.dataset,
+            args.output,
+            version=args.version,
+            scorer_revision=args.scorer_revision,
+            previous=json.loads(args.previous.read_bytes()) if args.previous else None,
+            change_note=args.change_note,
+        )
+    elif args.command == "compare-releases":
+        from .versions import compare_releases
+
+        value = compare_releases(
+            json.loads(args.left.read_bytes()), json.loads(args.right.read_bytes())
+        )
+    elif args.command == "list":
         value = registry()
     elif args.command == "rebuild":
         from .simpleqa import rebuild_dataset
