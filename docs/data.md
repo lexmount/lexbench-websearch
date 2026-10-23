@@ -26,7 +26,7 @@ SimpleQA Verified is by Lukas Haas, Gal Yona, Giovanni D'Antonio, Sasha Goldshte
 
 ## Versioning
 
-`registry.json` binds dataset IDs to counts and exact file hashes. Loaders reject changed bytes. `provenance.json` lists the packaged dataset identities and source inventory. Per-case attributions link to original public sources. Execution profiles and report approvals are external inputs owned by the consuming harness.
+`registry.json` binds dataset IDs to counts and exact file hashes. Loaders reject changed bytes. `definitions/sources.json` owns source attribution and per-case derivations; `definitions/benchmark-release.json` freezes the catalog edition. Execution profiles and report approvals are external inputs owned by the consuming harness.
 
 No provider results, model grades, captures, secrets or private run directories are included. New references require independently observed source evidence and positive/negative scoring controls. Altering a definition requires a new hash and an explicit version decision.
 

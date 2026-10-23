@@ -9,3 +9,7 @@ For new tasks, provide the query, provenance category, original source, derivati
 Scoring changes need positive and negative behavior tests. Reference changes need independently observed supporting evidence and paired controls. Update the registry hash whenever a dataset file changes, and explain whether its version must change. Do not rewrite measured evidence.
 
 Never commit secrets, provider outputs, private captures, temporary jobs or generated reports.
+
+Benchmark releases follow [the versioning policy](docs/versions.md). Update the
+catalog bindings when changing dataset or scoring contracts; do not overwrite
+published tags or historical dataset snapshots.

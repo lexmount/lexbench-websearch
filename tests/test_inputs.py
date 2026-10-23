@@ -153,3 +153,30 @@ def test_distribution_contains_no_report_instances_or_approval_lists():
         assert "publication_target" not in data
         assert "materialized_profiles" not in data
     assert not inputs.DEFINITIONS.joinpath("assessment-revisions.json").exists()
+
+
+def test_benchmark_runtime_is_independent_of_harness_and_provider_clients():
+    import ast
+
+    forbidden = {
+        "harness",
+        "requests",
+        "httpx",
+        "aiohttp",
+        "playwright",
+        "socket",
+        "subprocess",
+    }
+    for path in inputs.DEFINITIONS.parent.glob("*.py"):
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, ast.Import):
+                modules = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom) and not node.level:
+                modules = [node.module or ""]
+            else:
+                continue
+            assert not any(
+                module.split(".")[0] in forbidden
+                or module in {"urllib.request", "http.client"}
+                for module in modules
+            ), path.name

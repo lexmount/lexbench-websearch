@@ -1,4 +1,10 @@
-# LexBench Web Search
+<div align="center">
+
+<img src="docs/assets/overview.png" alt="LexBench Web Search — Measure what search finds." width="100%">
+
+[Datasets](#datasets) · [Quick start](#quick-start) · [Scoring](#scoring) · [Contributing](CONTRIBUTING.md)
+
+</div>
 
 Versioned search queries, source references and retrieval scoring for Search APIs.
 
@@ -57,3 +63,11 @@ Project code and authored material use the [MIT license](LICENSE). Third-party m
 Please cite this repository using [CITATION.cff](CITATION.cff), and cite the original datasets when using their material. The [source guide](docs/data.md) provides pinned upstream links and paper references.
 
 [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
+
+## Benchmark editions
+
+The first edition is **1.0.0**, with release tag **`bench-1.0.0`** created after
+merge. `uv run --frozen lexbench-websearch version` verifies the installed
+catalog, datasets and scoring source. Benchmark editions are independent of
+Python package versions. See [versioning](docs/versions.md) for change rules,
+frozen input sidecars and comparison compatibility.
