@@ -18,6 +18,8 @@ def definition_path(name):
     path = DEFINITIONS / relative
     if path.is_symlink() or not path.resolve().is_relative_to(DEFINITIONS.resolve()):
         raise ValueError("Definition path escapes package")
+    if not path.is_file():
+        raise FileNotFoundError("Unknown benchmark definition: " + name)
     return path
 
 
@@ -56,7 +58,4 @@ def resolve_profile(profile):
 
 
 def implementation_sources():
-    return {
-        "dependencies/lexbench_websearch/" + p.name: p
-        for p in sorted(Path(__file__).parent.glob("*.py"))
-    }
+    return {p.name: p for p in sorted(Path(__file__).parent.glob("*.py"))}

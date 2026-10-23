@@ -39,11 +39,12 @@ def test_builder_rejects_unpinned_csv_before_selection():
         rebuild_dataset(csv_fixture(["one"]))
 
 
-def test_builder_retains_source_artifact_metadata(monkeypatch):
+def test_builder_retains_source_artifact_metadata():
     from lexbench_websearch import simpleqa
 
     raw = csv_fixture(["one"])
-    monkeypatch.setattr(simpleqa, "SOURCE_SHA256", simpleqa.digest(raw))
+    manifest = simpleqa.source_manifest()
+    manifest["sha256"] = simpleqa.digest(raw)
     # Correctly hashed but partial publisher inputs must still be rejected.
     with pytest.raises(ValueError, match="Frozen population"):
-        simpleqa.rebuild_dataset(raw)
+        simpleqa.rebuild_dataset(raw, manifest=manifest)

@@ -8,3 +8,5 @@ The MIT license in this repository covers project code and authored material. It
 - **Referenced websites and papers:** URLs and short task-specific source assertions identify acceptance evidence. Referenced content remains subject to its publisher's terms.
 
 `definitions/sources.json` is the machine-readable attribution inventory. Report missing or incorrect attribution through a repository issue, including the affected case ID and supporting source.
+
+SimpleQA Verified derives questions from OpenAI SimpleQA, distributed under MIT, Copyright (c) 2024 OpenAI. The upstream notice is retained in `definitions/NOTICE.txt`; see https://github.com/openai/simple-evals/blob/main/LICENSE.

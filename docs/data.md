@@ -14,7 +14,7 @@
 
 One community source is [Arcadia_Bao's comparison](https://x.com/Arcadia_Bao/status/2111711040757006401). Its claims and scores are not benchmark labels. The inventory also cites other posts, papers and pages individually. Screenshots, third-party page bodies and upstream provider judgments are not redistributed.
 
-Known-page references are deliberately incomplete. They can test whether a selected page was found, but are not exhaustive relevance judgments of the web. `reference-additions.json` contains portable reference qualifications; `identity-correction.json` records independently supported URL equivalences. Their paired regression controls live alongside the definitions.
+Known-page references are deliberately incomplete. They can test whether a selected page was found, but are not exhaustive relevance judgments of the web. `scenarios-v1` preserves the original task definitions. `scenarios-v2` adds thirty qualified reference pages and four supported URL equivalences, including their source observations and publisher assertions. Each version is independently hash-bound; new runs should use `registry.current.scenarios`. Paired regression controls live alongside the definitions.
 
 ## Factual retrieval probes
 
@@ -26,6 +26,16 @@ SimpleQA Verified is by Lukas Haas, Gal Yona, Giovanni D'Antonio, Sasha Goldshte
 
 ## Versioning
 
-`registry.json` binds dataset IDs to counts and exact file hashes. Loaders reject changed bytes. `provenance.json` records the Browser Eval revision from which these definitions were extracted and the identities of the original mixed collection profiles. Browser Eval reconstructs those historical profiles by resolving the dataset fields; the execution settings are maintained only there.
+`registry.json` binds dataset IDs to counts and exact file hashes. Loaders reject changed bytes. `provenance.json` lists the packaged dataset identities and source inventory. Per-case attributions link to original public sources. Execution profiles and report approvals are external inputs owned by the consuming harness.
 
 No provider results, model grades, captures, secrets or private run directories are included. New references require independently observed source evidence and positive/negative scoring controls. Altering a definition requires a new hash and an explicit version decision.
+
+## Rebuilding the factual selection
+
+Download the exact CSV named by `definitions/factual-source.json`, then run `lexbench-websearch rebuild factual-v1 --csv /path/to/publisher.csv`. The command verifies both the publisher hash and the rebuilt dataset hash. The source manifest owns the query-length selection and expected counts.
+
+## Topic composition
+
+Thirteen scenario queries mention DeepSeek, including product documentation and community examples. These are provenance-driven coverage cases, not a balanced sample of all search topics. Consumers should publish the selected composition and may break down results by topic; changing the queries requires a new dataset version.
+
+The screenshot transcriptions have no established public source. Their original attribution remains unknown; image hashes inherited in the historical definitions are not independently verifiable public citations. No author or usage license is inferred from those hashes.

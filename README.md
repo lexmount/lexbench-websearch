@@ -9,6 +9,7 @@ LexBench Web Search owns the benchmark inputs and scoring rules. [Browser Eval](
 | Dataset | Tasks | Content |
 | --- | ---: | --- |
 | `scenarios-v1` | 149 | General web, named-site and vertical-search queries assembled from public catalogs, community examples and authored controls |
+| `scenarios-v2` | 149 | The same queries with qualified reference additions and URL equivalences; recommended for new runs |
 | `factual-v1` | 831 | Unchanged SimpleQA Verified questions within the preregistered 128-character input limit, with publisher answers and source URLs |
 
 The scenario set includes 80 queries from Microck/websearch-bench, 7 traceable exact community queries, 28 transcribed screenshot queries whose original author/post is unknown, 14 community-derived queries and 20 curated queries. Every task has an origin and a derivation entry in the source inventory. See [data and sources](docs/data.md), [third-party notices](THIRD_PARTY.md) and the installed `definitions/sources.json` inventory.
@@ -20,8 +21,8 @@ The factual set is an adaptation for retrieval diagnostics. It does not reproduc
 ```sh
 uv sync --frozen
 uv run --frozen lexbench-websearch list
-uv run --frozen lexbench-websearch validate scenarios-v1
-uv run --frozen lexbench-websearch export scenarios-v1 > /tmp/scenarios.json
+uv run --frozen lexbench-websearch validate scenarios-v2
+uv run --frozen lexbench-websearch export scenarios-v2 > /tmp/scenarios.json
 make check
 ```
 
@@ -35,7 +36,7 @@ uv add 'lexbench-websearch @ git+https://github.com/lexmount/lexbench-websearch.
 from lexbench_websearch.inputs import load_dataset
 from lexbench_websearch.relevance import query_metrics
 
-cases = load_dataset("scenarios-v1")["cases"]
+cases = load_dataset("scenarios-v2")["cases"]
 metrics = query_metrics(["useful", "unrelated"], {"useful": 3, "unrelated": 0}, cutoff=5)
 assert metrics["ndcg"] == 1.0
 assert metrics["precision"] == 0.2
