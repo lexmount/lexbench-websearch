@@ -11,5 +11,7 @@ Scoring changes need positive and negative behavior tests. Reference changes nee
 Never commit secrets, provider outputs, private captures, temporary jobs or generated reports.
 
 Benchmark releases follow [the versioning policy](docs/versions.md). Update the
-catalog bindings when changing dataset or scoring contracts; do not overwrite
+catalog bindings only for a human-requested release; do not overwrite
 published tags or historical dataset snapshots.
+
+Version bumps and release tags are manual, triggered by an explicit human release request. Ordinary fixes and synchronization leave the release catalog unchanged. Inspect development scoring with the `version` command; `unreleased` source changes do not certify a new edition.

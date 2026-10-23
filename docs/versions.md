@@ -21,7 +21,7 @@ billing. Those controls belong to the execution harness. A minor correction
 preserves the task's purpose; adding a different quality dimension calls for a
 major edition even if the automatic fingerprints alone would permit a minor.
 
-The proposed correction edition is **1.1.0** (`bench-1.1.0`). It keeps the same tasks and requests and requires rescoring for comparison with 1.0.0. Citation cleanup uses explicit, source-qualified derivations; unannotated indices remain literal. Source excerpts must contain the complete answer phrase or quantity. The catalog binds the correction to its scorer commit and the previous release hashes.
+Version changes are manual. Code synchronization, bug fixes, tests and report rebuilds do not increment versions, rewrite the release catalog, or create tags. Prepare or publish an edition only after an explicit human release request. Until then, the catalog retains its frozen edition and source inspection reports changed scoring as `unreleased`. Strict release verification continues to reject that mismatch.
 
 ## Inspect the installed release
 
@@ -29,8 +29,7 @@ The proposed correction edition is **1.1.0** (`bench-1.1.0`). It keeps the same 
 uv run --frozen lexbench-websearch version
 ```
 
-This verifies `definitions/benchmark-release.json` against every installed
-dataset and the scoring source. The catalog records each dataset separately,
+This checks the frozen catalog against every installed dataset and reports whether the installed scoring source matches it. Inspection is read-only and does not certify changed scoring as the frozen edition. The catalog records each dataset separately,
 including historical snapshots. It contains no provider results, report text,
 credentials or publication targets.
 

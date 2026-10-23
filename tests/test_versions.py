@@ -38,11 +38,11 @@ def release(data=None, version="1.0.0", **options):
 
 
 def test_installed_catalog_is_complete_and_verifiable():
-    edition = catalog_release()
-    assert edition["tag"] == "bench-1.1.0"
+    edition = catalog_release(require_current_scorer=False)
+    assert edition["tag"] == "bench-1.0.0"
     assert set(edition["datasets"]) == set(registry()["datasets"])
     for name, bound in edition["datasets"].items():
-        verify_release(bound, load_dataset(name))
+        verify_release(bound, load_dataset(name), verify_scorer=False)
 
 
 @pytest.mark.parametrize(
@@ -110,17 +110,23 @@ def test_only_explicit_stable_semver_is_accepted(version):
         release(version=version)
 
 
-def test_catalog_tampering_and_tag_mismatch_are_rejected(tmp_path):
-    original = catalog_release()
+def test_catalog_tampering_and_tag_mismatch_are_rejected(tmp_path, monkeypatch):
+    original = catalog_release(require_current_scorer=False)
     for change in ({"tag": "benchmark-v1.0.0"}, {"datasets": {}}, {"current": {}}):
         path = tmp_path / "catalog.json"
         path.write_text(json.dumps({**original, **change}))
         with pytest.raises(ValueError):
-            catalog_release(path)
+            catalog_release(path, require_current_scorer=False)
     broken = deepcopy(original)
     broken["datasets"][next(iter(broken["datasets"]))]["scoring_source_sha256"] = (
         "0" * 64
     )
+    from lexbench_websearch import versions
+
+    frozen_hash = next(iter(original["datasets"].values()))["scoring_source_sha256"]
+    monkeypatch.setattr(versions, "scoring_source_sha256", lambda: frozen_hash)
+    path.write_text(json.dumps(original))
+    catalog_release(path)
     path.write_text(json.dumps(broken))
     with pytest.raises(ValueError, match="changed"):
         catalog_release(path)
@@ -162,3 +168,21 @@ def test_release_cli_writes_once_and_compares_outside_checkout(tmp_path):
         freeze_release(
             link, tmp_path / "other.json", version="1.0.0", scorer_revision=REVISION
         )
+
+
+def test_development_inspection_never_updates_or_certifies_an_edition(
+    tmp_path, monkeypatch
+):
+    from lexbench_websearch import versions
+
+    path = tmp_path / "benchmark-release.json"
+    source = versions.definition_path("benchmark-release.json").read_bytes()
+    path.write_bytes(source)
+    monkeypatch.setattr(versions, "scoring_source_sha256", lambda: "f" * 64)
+    inspected = catalog_release(path, require_current_scorer=False)
+    assert inspected["version"] == "1.0.0"
+    assert inspected["tag"] == "bench-1.0.0"
+    assert inspected["development"]["scoring_status"] == "unreleased"
+    assert path.read_bytes() == source
+    with pytest.raises(ValueError, match="scoring contract changed"):
+        catalog_release(path)
