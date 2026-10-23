@@ -16,8 +16,8 @@
       "population_sha256": "46e9e01c139d8ec4432d2bdb0641c2735e2513f277164ad6e3587ec0d7846fc3",
       "requests_sha256": "50b1c91e5f69e3d72d2c91c0397805544759b6ebd4c992da771def830aac7c3b",
       "acceptance_sha256": "21a0d251aa7ea507aefc02017fc59f3852550136e37ebf598e19c7bb6a0c246f",
-      "scoring_source_sha256": "350da47942d389690e35e44b94221ed99dafa1a067786710f48e4b84bca7a9f1",
-      "scorer_revision": "a6d7b92987e32ef52563ee68bac4343db5686d95"
+      "scoring_source_sha256": "1dad63e3c4294ea044abfcd5d0bb3b76b84a35613967629c22b6ebc25cf9cc8a",
+      "scorer_revision": "9c833f833ce748ecfd4abef7c65f00753798a799"
     },
     "factual-v1": {
       "schema": "lexbench-websearch-release/1",
@@ -28,8 +28,8 @@
       "population_sha256": "c4146ae8b534543ab5d3972d0dfa53b8da9d4c535e62af7c510292c79309e3b1",
       "requests_sha256": "e2dee18fbcb734ebb8db513afd84056cb6045aeabd3fd5d1236b964a73f722b1",
       "acceptance_sha256": "2d5a342611dc42477d3d1c7fdd9a4b84cbbd8d39fbec7ed8baee0d1bbf399604",
-      "scoring_source_sha256": "350da47942d389690e35e44b94221ed99dafa1a067786710f48e4b84bca7a9f1",
-      "scorer_revision": "a6d7b92987e32ef52563ee68bac4343db5686d95"
+      "scoring_source_sha256": "1dad63e3c4294ea044abfcd5d0bb3b76b84a35613967629c22b6ebc25cf9cc8a",
+      "scorer_revision": "9c833f833ce748ecfd4abef7c65f00753798a799"
     },
     "scenarios-v2": {
       "schema": "lexbench-websearch-release/1",
@@ -40,8 +40,8 @@
       "population_sha256": "46e9e01c139d8ec4432d2bdb0641c2735e2513f277164ad6e3587ec0d7846fc3",
       "requests_sha256": "50b1c91e5f69e3d72d2c91c0397805544759b6ebd4c992da771def830aac7c3b",
       "acceptance_sha256": "b99a2863c018525f9aaf5490027c853a1da2a462d3af06cdc1f1850e8e864145",
-      "scoring_source_sha256": "350da47942d389690e35e44b94221ed99dafa1a067786710f48e4b84bca7a9f1",
-      "scorer_revision": "a6d7b92987e32ef52563ee68bac4343db5686d95"
+      "scoring_source_sha256": "1dad63e3c4294ea044abfcd5d0bb3b76b84a35613967629c22b6ebc25cf9cc8a",
+      "scorer_revision": "9c833f833ce748ecfd4abef7c65f00753798a799"
     }
   }
 }
