@@ -13,6 +13,14 @@ def validate_cases(cases, *, reference_checks=None, reference_scope=None):
     ):
         raise ValueError("Empty, duplicate or unsafe task identities")
     for case in cases:
+        if case.get("answer_derivation") is not None:
+            from .answer_rules import reference_rule
+
+            if "reference_answer" not in case:
+                raise ValueError("Answer derivation requires a reference answer")
+            reference_rule(
+                case["reference_answer"], derivation=case["answer_derivation"]
+            )
         for url in case.get("reference_urls", []):
             canonical_url(url)
         for alias, target in case.get("identity_aliases", {}).items():

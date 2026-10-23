@@ -33,7 +33,11 @@ def validate_regressions(record):
             )
         for control in controls:
             if control["kind"] == "answer":
-                actual = match_reference_answer(control["answer"], control["text"])
+                actual = match_reference_answer(
+                    control["answer"],
+                    control["text"],
+                    derivation=control.get("derivation"),
+                )
             elif control["kind"] == "anchor":
                 actual = bool(
                     evaluate(
@@ -84,6 +88,7 @@ def validate_regressions(record):
                     case = {
                         "reference_answer": control["answer"],
                         "answer_match_rule": "published-answers/2",
+                        "answer_derivation": control.get("derivation"),
                     }
                     results = [
                         {"url": "https://docs.test/fact", "snippet": control["text"]}

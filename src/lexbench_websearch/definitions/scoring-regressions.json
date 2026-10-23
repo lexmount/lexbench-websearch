@@ -620,25 +620,73 @@
       "kind": "answer",
       "answer": "Study of Sandwich Beams[1]",
       "text": "Study of Sandwich Beams",
-      "expected": true
+      "expected": true,
+      "derivation": {
+        "reference": "Study of Sandwich Beams[1]",
+        "derived_answer": "Study of Sandwich Beams",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "Study of Sandwich Beams"
+          }
+        ]
+      }
     },
     {
       "kind": "answer",
       "answer": "Study of Sandwich Beams[1]",
       "text": "Study of Beams",
-      "expected": false
+      "expected": false,
+      "derivation": {
+        "reference": "Study of Sandwich Beams[1]",
+        "derived_answer": "Study of Sandwich Beams",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "Study of Sandwich Beams"
+          }
+        ]
+      }
     },
     {
       "kind": "answer",
       "answer": "Whitehttps://source.test/flags#ref",
       "text": "White",
-      "expected": true
+      "expected": true,
+      "derivation": {
+        "reference": "Whitehttps://source.test/flags#ref",
+        "derived_answer": "White",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "White"
+          }
+        ]
+      }
     },
     {
       "kind": "answer",
       "answer": "Whitehttps://source.test/flags#ref",
       "text": "Black",
-      "expected": false
+      "expected": false,
+      "derivation": {
+        "reference": "Whitehttps://source.test/flags#ref",
+        "derived_answer": "White",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "White"
+          }
+        ]
+      }
     },
     {
       "kind": "answer",
@@ -650,12 +698,56 @@
       "kind": "answer",
       "answer": "150[1]",
       "text": "150 people",
-      "expected": true
+      "expected": true,
+      "derivation": {
+        "reference": "150[1]",
+        "derived_answer": "150",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "150"
+          }
+        ]
+      }
     },
     {
       "kind": "answer",
       "answer": "150[1]",
       "text": "150%",
+      "expected": false,
+      "derivation": {
+        "reference": "150[1]",
+        "derived_answer": "150",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Synthetic independently qualified citation control",
+        "sources": [
+          {
+            "url": "https://reference.test/answer",
+            "excerpt": "150"
+          }
+        ]
+      }
+    }
+  ],
+  "literal-bracketed-answer": [
+    {
+      "kind": "answer",
+      "answer": "v[0]",
+      "text": "v[0]",
+      "expected": true
+    },
+    {
+      "kind": "answer",
+      "answer": "v[0]",
+      "text": "v[1]",
+      "expected": false
+    },
+    {
+      "kind": "answer",
+      "answer": "v[0]",
+      "text": "v",
       "expected": false
     }
   ]

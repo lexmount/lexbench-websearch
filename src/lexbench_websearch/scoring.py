@@ -162,7 +162,7 @@ def factual_evidence(case, results, *, cutoff=5):
             from .answer_rules import match_reference_answer
 
             matcher = lambda text: match_reference_answer(
-                case["reference_answer"], text
+                case["reference_answer"], text, derivation=case.get("answer_derivation")
             )
         else:
             matcher = lambda text: contains_answer(text, case["reference_answer"])

@@ -32,7 +32,18 @@ def test_composed_datasets_preserve_order_and_reject_duplicate_or_changed_inputs
     ],
 )
 def test_citation_cleanup_preserves_original_answers_and_url_answers(reference, answer):
-    rule = reference_rule(reference)
+    derivation = (
+        None
+        if reference == answer
+        else {
+            "reference": reference,
+            "derived_answer": answer,
+            "kind": "terminal-citation-metadata",
+            "qualification": "Independent source confirms answer without citation",
+            "sources": [{"url": "https://source.test/", "excerpt": answer}],
+        }
+    )
+    rule = reference_rule(reference, derivation=derivation)
     assert rule["reference"] == reference
     assert rule["alternatives"] == [answer]
 
@@ -64,3 +75,44 @@ def test_serp_packet_preserves_optional_native_text_and_explicit_source_scope():
     assert candidate["source_eligible"]
     assert candidate["previews"] == [{"title": "", "snippet": ""}]
     assert packet["blind_candidate_packets"][0]["required_domains"] == []
+
+
+@pytest.mark.parametrize(
+    "reference,text,expected",
+    [
+        ("v[0]", "v[0]", True),
+        ("v[0]", "v[1]", False),
+        ("v[0]", "v", False),
+        ("tensor[12]", "tensor[13]", False),
+        ("42[7]", "42", False),
+        ("Adahttps://source.test/page", "Ada", False),
+    ],
+)
+def test_unannotated_answers_keep_literal_brackets_and_urls(reference, text, expected):
+    from lexbench_websearch.scoring import evaluate, task_acceptance
+
+    case = {"reference_answer": reference, "answer_match_rule": "published-answers/2"}
+    results = [{"url": "https://source.test/result", "snippet": text}]
+    row = {"results": results, "metrics": evaluate(case, results)}
+    assert bool(row["metrics"]["answer_in_preview_5"]) is expected
+    assert task_acceptance(case, row, "answer") is expected
+
+
+def test_citation_derivation_requires_matching_reference_and_qualified_source():
+    good = {
+        "reference": "42[7]",
+        "derived_answer": "42",
+        "kind": "terminal-citation-metadata",
+        "qualification": "Source confirms the answer",
+        "sources": [{"url": "https://source.test/", "excerpt": "42"}],
+    }
+    assert reference_rule("42[7]", derivation=good)["alternatives"] == ["42"]
+    for change in (
+        {"reference": "other[7]"},
+        {"derived_answer": "43"},
+        {"sources": []},
+        {"qualification": ""},
+        {"sources": [{"url": "https://source.test/", "excerpt": "43"}]},
+    ):
+        with pytest.raises(ValueError, match="derivation"):
+            reference_rule("42[7]", derivation={**good, **change})
