@@ -1,7 +1,7 @@
 {
   "schema": "lexbench-websearch-catalog-release/1",
-  "version": "1.0.0",
-  "tag": "bench-1.0.0",
+  "version": "1.1.0",
+  "tag": "bench-1.1.0",
   "current": {
     "scenarios": "scenarios-v2",
     "factual": "factual-v1"
@@ -9,39 +9,45 @@
   "datasets": {
     "scenarios-v1": {
       "schema": "lexbench-websearch-release/1",
-      "version": "1.0.0",
-      "tag": "bench-1.0.0",
+      "version": "1.1.0",
+      "tag": "bench-1.1.0",
       "dataset_sha256": "c3315a024b8bcc106dd2196d0a2271bd28bafbfaae5613ff54a90ebbae1ce05e",
       "case_count": 149,
       "population_sha256": "46e9e01c139d8ec4432d2bdb0641c2735e2513f277164ad6e3587ec0d7846fc3",
       "requests_sha256": "50b1c91e5f69e3d72d2c91c0397805544759b6ebd4c992da771def830aac7c3b",
       "acceptance_sha256": "21a0d251aa7ea507aefc02017fc59f3852550136e37ebf598e19c7bb6a0c246f",
-      "scoring_source_sha256": "1dad63e3c4294ea044abfcd5d0bb3b76b84a35613967629c22b6ebc25cf9cc8a",
-      "scorer_revision": "9c833f833ce748ecfd4abef7c65f00753798a799"
+      "scoring_source_sha256": "aa75b268405c7522e49444f476863d25d6d61d80662dddd9da32ab4d20f7a767",
+      "scorer_revision": "a602b83a9c16318508474ac277d8936e1b40f2d8",
+      "previous_release_sha256": "5aab015a1db7b7fbe56dea914518251419d81d3a28427d7adb54223323d4c071",
+      "change_note": "Qualify citation cleanup through explicit source-backed answer derivations and complete phrase boundaries; preserve literal indices and existing task requests."
     },
     "factual-v1": {
       "schema": "lexbench-websearch-release/1",
-      "version": "1.0.0",
-      "tag": "bench-1.0.0",
+      "version": "1.1.0",
+      "tag": "bench-1.1.0",
       "dataset_sha256": "d9c975c002ba5970a6109ea69b06cd44ea8dcea41d51671f388246cec3fb721e",
       "case_count": 831,
       "population_sha256": "c4146ae8b534543ab5d3972d0dfa53b8da9d4c535e62af7c510292c79309e3b1",
       "requests_sha256": "e2dee18fbcb734ebb8db513afd84056cb6045aeabd3fd5d1236b964a73f722b1",
       "acceptance_sha256": "2d5a342611dc42477d3d1c7fdd9a4b84cbbd8d39fbec7ed8baee0d1bbf399604",
-      "scoring_source_sha256": "1dad63e3c4294ea044abfcd5d0bb3b76b84a35613967629c22b6ebc25cf9cc8a",
-      "scorer_revision": "9c833f833ce748ecfd4abef7c65f00753798a799"
+      "scoring_source_sha256": "aa75b268405c7522e49444f476863d25d6d61d80662dddd9da32ab4d20f7a767",
+      "scorer_revision": "a602b83a9c16318508474ac277d8936e1b40f2d8",
+      "previous_release_sha256": "1349a5f9e530c93897a119366bd543eb837a6524af8a5ea09427be69cbdd1065",
+      "change_note": "Qualify citation cleanup through explicit source-backed answer derivations and complete phrase boundaries; preserve literal indices and existing task requests."
     },
     "scenarios-v2": {
       "schema": "lexbench-websearch-release/1",
-      "version": "1.0.0",
-      "tag": "bench-1.0.0",
+      "version": "1.1.0",
+      "tag": "bench-1.1.0",
       "dataset_sha256": "28e3663305648baf7b8fc9553725f04e5541c67beb7a265fc4b7425f530016d8",
       "case_count": 149,
       "population_sha256": "46e9e01c139d8ec4432d2bdb0641c2735e2513f277164ad6e3587ec0d7846fc3",
       "requests_sha256": "50b1c91e5f69e3d72d2c91c0397805544759b6ebd4c992da771def830aac7c3b",
       "acceptance_sha256": "b99a2863c018525f9aaf5490027c853a1da2a462d3af06cdc1f1850e8e864145",
-      "scoring_source_sha256": "1dad63e3c4294ea044abfcd5d0bb3b76b84a35613967629c22b6ebc25cf9cc8a",
-      "scorer_revision": "9c833f833ce748ecfd4abef7c65f00753798a799"
+      "scoring_source_sha256": "aa75b268405c7522e49444f476863d25d6d61d80662dddd9da32ab4d20f7a767",
+      "scorer_revision": "a602b83a9c16318508474ac277d8936e1b40f2d8",
+      "previous_release_sha256": "059307207611f6303b117f96f462db2c4aa4f853f71a99a0451d09e0546d0d33",
+      "change_note": "Qualify citation cleanup through explicit source-backed answer derivations and complete phrase boundaries; preserve literal indices and existing task requests."
     }
   }
 }

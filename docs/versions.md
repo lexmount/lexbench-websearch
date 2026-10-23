@@ -21,6 +21,8 @@ billing. Those controls belong to the execution harness. A minor correction
 preserves the task's purpose; adding a different quality dimension calls for a
 major edition even if the automatic fingerprints alone would permit a minor.
 
+The proposed correction edition is **1.1.0** (`bench-1.1.0`). It keeps the same tasks and requests and requires rescoring for comparison with 1.0.0. Citation cleanup uses explicit, source-qualified derivations; unannotated indices remain literal. Source excerpts must contain the complete answer phrase or quantity. The catalog binds the correction to its scorer commit and the previous release hashes.
+
 ## Inspect the installed release
 
 ```sh

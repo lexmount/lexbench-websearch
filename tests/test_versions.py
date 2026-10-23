@@ -39,7 +39,7 @@ def release(data=None, version="1.0.0", **options):
 
 def test_installed_catalog_is_complete_and_verifiable():
     edition = catalog_release()
-    assert edition["tag"] == "bench-1.0.0"
+    assert edition["tag"] == "bench-1.1.0"
     assert set(edition["datasets"]) == set(registry()["datasets"])
     for name, bound in edition["datasets"].items():
         verify_release(bound, load_dataset(name))
