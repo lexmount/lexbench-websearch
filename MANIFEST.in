@@ -1,4 +1,4 @@
-include LICENSE THIRD_PARTY.md CITATION.cff provenance.json
-recursive-include docs *.md
+include LICENSE THIRD_PARTY.md CITATION.cff
+recursive-include docs *.md *.png
 recursive-include src/lexbench_websearch/definitions *.json *.txt
 include AGENTS.md CONTRIBUTING.md SECURITY.md uv.lock Makefile

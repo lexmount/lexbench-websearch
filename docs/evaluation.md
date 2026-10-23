@@ -15,6 +15,16 @@ A task is one query with its stated site, time and content constraints. Choose t
 
 This adopts the four-grade structure used by [TREC Deep Learning](https://microsoft.github.io/msmarco/TREC-Deep-Learning.html). These are project task-specific definitions; the scenario set is not a TREC dataset. Annotators must record reasons and supporting text. A preview-only assessment describes the returned title/snippet; it does not establish the truth of the entire page. Human or model annotation may be orchestrated externally, but its identity and evidence must be disclosed separately. No labels are supplied as independent human gold in this release.
 
+## Frozen annotation prompts
+
+The installed default is `preview/2`: a four-grade, title/snippet-only rubric
+that leaves the explanation language to the annotator. `preview/1` retains the
+original Chinese-explanation instruction for verifying historical annotation
+receipts. Both use the same grading definitions. Prompt bytes are versioned
+because annotation receipts bind their exact hash; a language-only edit still
+changes that hash. New annotation jobs use the current prompt. Retaining the
+old one does not change or rerun historical grades.
+
 ## Result, query and dataset scores
 
 Each unique query–URL candidate receives one grade. A system's ranked results reuse those grades. Repeated URLs receive no additional gain. Missing positions count as zero.

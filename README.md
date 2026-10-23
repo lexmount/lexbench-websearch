@@ -1,4 +1,10 @@
-# LexBench Web Search
+<div align="center">
+
+<img src="docs/assets/overview.png" alt="LexBench Web Search — Measure what search finds." width="100%">
+
+[Datasets](#datasets) · [Quick start](#quick-start) · [Scoring](#scoring) · [Contributing](CONTRIBUTING.md)
+
+</div>
 
 Versioned search queries, source references and retrieval scoring for Search APIs.
 
