@@ -15,4 +15,6 @@ Use `candidate_packet(profile, rows)` to produce a blind pool. The minimal profi
 
 The command `lexbench-websearch score INPUT.json` accepts `ranking` (candidate IDs), `grades` (candidate ID to integer 0..3), and optional `cutoff`. It returns deterministic per-query metrics. Collection and report commands remain in Browser Eval.
 
+Citation cleanup under `answer_match_rule="published-answers/2"` requires a case-level `answer_derivation`. It binds the exact `reference`, `derived_answer`, `kind="terminal-citation-metadata"`, a `qualification` statement, and HTTPS `sources` whose excerpts support the derived answer. Unannotated answers retain bracketed indices and appended URLs. Direct callers pass the same metadata as `derivation=` to `reference_rule` or `match_reference_answer`; the original reference stays intact.
+
 Frozen measured outputs are external evidence, not package assets. The package's `implementation_sources` function lets a harness bind scorer source bytes along with its own runner sources. Historical receipts retain their original code and input hashes.
