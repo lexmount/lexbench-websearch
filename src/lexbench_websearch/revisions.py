@@ -236,13 +236,22 @@ def apply_report_revision(profile, rows, revision, *, artifacts=None, normalizer
             raise ValueError(
                 "Reference citation cleanup requires a bound scoring revision"
             )
-    exclusions = []
-    for item in revision.get("reference_adjudications", []):
+    exclusions = set(revised.get("factual_quality_exclusions", []))
+    decisions = {}
+    incoming = revision.get("reference_adjudications", [])
+    for batch in (revised.get("reference_adjudications", []), incoming):
+        seen = set()
+        for item in batch:
+            cid = item["case_id"]
+            if cid in seen or cid in decisions and decisions[cid] != item:
+                raise ValueError("Duplicate or conflicting reference adjudication")
+            seen.add(cid)
+            decisions[cid] = item
+    for item in decisions.values():
         cid = item["case_id"]
         case = cases.get(cid, {})
         if (
-            cid in exclusions
-            or "reference_answer" not in case
+            "reference_answer" not in case
             or item.get("query") != case.get("query")
             or item.get("reference_answer") != case["reference_answer"]
             or item.get("quality_excluded") is not True
@@ -252,10 +261,13 @@ def apply_report_revision(profile, rows, revision, *, artifacts=None, normalizer
             raise ValueError(
                 "Reference adjudication does not bind the unchanged factual case"
             )
-        exclusions.append(cid)
+        exclusions.add(cid)
     if exclusions:
         revised["factual_quality_exclusions"] = sorted(exclusions)
-        revised["reference_adjudications"] = revision["reference_adjudications"]
+    if decisions:
+        revised["reference_adjudications"] = [
+            decisions[cid] for cid in sorted(decisions)
+        ]
     updated, changes = [], []
     for row in rows:
         new = dict(row)

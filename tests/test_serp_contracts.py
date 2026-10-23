@@ -242,3 +242,53 @@ def test_native_correction_preserves_calls_and_checks_artifacts(tmp_path, monkey
         normalizer=project,
     )
     assert preserved == [bad_row]
+
+
+def test_sequential_reference_quarantines_preserve_prior_decisions():
+    cases = [
+        {"id": cid, "query": cid, "reference_answer": "42"} for cid in ("a", "b", "c")
+    ]
+    profile = {"cases": cases}
+    revision = {
+        "schema": "web-search-assessment-revision/1",
+        "provider_calls": 0,
+        "root_cause": "Incorrect references",
+        "regression_ids": ["unqualified-reference-rejected"],
+    }
+    decisions = [
+        {
+            "case_id": c["id"],
+            "query": c["query"],
+            "reference_answer": "42",
+            "quality_excluded": True,
+            "reason": "Contradicted by source",
+            "evidence": [{"url": "https://reference.test/", "excerpt": "43"}],
+        }
+        for c in cases[:2]
+    ]
+    first, _, _ = apply_report_revision(
+        profile, [], {**revision, "reference_adjudications": decisions[:1]}
+    )
+    second, _, _ = apply_report_revision(
+        first, [], {**revision, "reference_adjudications": decisions[1:]}
+    )
+    assert second["factual_quality_exclusions"] == ["a", "b"]
+    assert second["reference_adjudications"] == decisions
+    assert [
+        c["id"]
+        for c in second["cases"]
+        if c["id"] not in second["factual_quality_exclusions"]
+    ] == ["c"]
+    replay, _, _ = apply_report_revision(
+        second, [], {**revision, "reference_adjudications": decisions}
+    )
+    assert replay == second
+    assert "factual_quality_exclusions" not in profile
+    for invalid in (
+        [decisions[0], decisions[0]],
+        [{**decisions[0], "reason": "Changed decision"}],
+    ):
+        with pytest.raises(ValueError, match="Duplicate or conflicting"):
+            apply_report_revision(
+                second, [], {**revision, "reference_adjudications": invalid}
+            )
