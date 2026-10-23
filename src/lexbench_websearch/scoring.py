@@ -255,12 +255,12 @@ def task_acceptance(
 
 def classify(case, row, *, cutoff=5, quality_excluded=False, relevance_grades=None):
     """Primary acceptance and diagnostic labels share the same task predicate."""
-    if quality_excluded:
-        return "probe", "quality_excluded"
     if row.get("error") or row.get("http_status", 200) != 200:
         return "fail", "api_error"
     if not row["results"]:
         return "fail", "empty"
+    if quality_excluded:
+        return "probe", "quality_excluded"
     accepted = task_acceptance(
         case,
         row,

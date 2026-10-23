@@ -39,6 +39,18 @@ def test_partial_relevance_passes_but_direct_match_metric_requires_top_grade():
     assert classify({}, row, quality_excluded=True) == ("probe", "quality_excluded")
 
 
+@pytest.mark.parametrize("excluded", [False, True])
+def test_reference_exclusion_preserves_delivery_failures(excluded):
+    populated = {"results": [{"url": "https://example.test/"}]}
+    for change in ({"http_status": 500}, {"error": "Timeout"}):
+        assert classify({}, {**populated, **change}, quality_excluded=excluded) == (
+            "fail", "api_error"
+        )
+    assert classify({}, {"results": []}, quality_excluded=excluded) == ("fail", "empty")
+    if excluded:
+        assert classify({}, populated, quality_excluded=True) == ("probe", "quality_excluded")
+
+
 def test_benchmark_answer_mirror_does_not_pass_factual_acceptance():
     case = {"query": "Who wrote the algorithm?", "reference_answer": "Ada Lovelace"}
     for title, expected in [
