@@ -6,9 +6,12 @@ import re
 
 from .inputs import digest
 
-SOURCE_REVISION = "ed392714d14fa5225b07c2b456453983bc75f690"
-SOURCE_SHA256 = "fb990cca0fae8515ae2f51b794d5fa791d095c1f919ecdbe22d0c1642e9ab966"
-SOURCE_URL = f"https://huggingface.co/datasets/google/simpleqa-verified/resolve/{SOURCE_REVISION}/simpleqa_verified.csv"
+
+def source_manifest():
+    from .inputs import definition_path
+    import json
+
+    return json.loads(definition_path("factual-source.json").read_bytes())
 
 
 def _urls(value):
@@ -25,49 +28,51 @@ def _urls(value):
     return urls
 
 
-def eligible_cases(csv_bytes):
+def eligible_cases(csv_bytes, *, manifest=None):
     """Select by the pre-call shared input limit, retaining original CSV order."""
+    manifest = manifest or source_manifest()
     rows = list(csv.DictReader(io.StringIO(csv_bytes.decode("utf-8-sig"))))
     if len({row["original_index"] for row in rows}) != len(rows):
         raise ValueError("Duplicate publisher question identity")
     return [
         {
-            "id": "sqv-" + row["original_index"],
-            "family": "web",
-            "category": "factual",
-            "language": "en",
+            **{k: v for k, v in manifest["case"].items() if k != "id_prefix"},
+            "id": manifest["case"]["id_prefix"] + row["original_index"],
             "query": row["problem"],
-            "origin": SOURCE_URL,
-            "provenance_kind": "public_labeled",
-            "derivation": "Unchanged question; all publisher questions of at most 128 Unicode characters are included",
+            "origin": manifest["url"],
             "reference_answer": row["answer"],
             "reference_urls": _urls(row["urls"]),
             "topic": row["topic"],
             "answer_type": row["answer_type"],
         }
         for row in rows
-        if len(row["problem"]) <= 128
+        if len(row["problem"]) <= manifest["selection"]["max_query_characters"]
     ]
 
 
-def rebuild_dataset(csv_bytes):
+def rebuild_dataset(csv_bytes, *, manifest=None):
     """Verify the pinned publisher input before rebuilding the declared population."""
-    if digest(csv_bytes) != SOURCE_SHA256:
+    manifest = manifest or source_manifest()
+    if digest(csv_bytes) != manifest["sha256"]:
         raise ValueError("Publisher CSV SHA256 does not match the frozen source")
     rows = list(csv.DictReader(io.StringIO(csv_bytes.decode("utf-8-sig"))))
-    cases = eligible_cases(csv_bytes)
-    if len(rows) != 1000 or len(cases) != 831:
+    cases = eligible_cases(csv_bytes, manifest=manifest)
+    cases = [{key: case[key] for key in manifest["case_field_order"]} for case in cases]
+    if (
+        len(rows) != manifest["selection"]["source_count"]
+        or len(cases) != manifest["selection"]["selected_count"]
+    ):
         raise ValueError("Frozen population differs from the pinned source selection")
     return {
         "schema": "lexbench-websearch-dataset/1",
-        "id": "factual-v1",
+        "id": manifest["dataset"],
         "cases": cases,
         "reference_checks": {},
         "reference_artifacts": {
-            SOURCE_URL: {
-                "sha256": SOURCE_SHA256,
-                "license": "MIT",
-                "scope": "Frozen publisher-provided answers and supporting URLs; source URL hits are not exhaustive relevance judgments",
+            manifest["url"]: {
+                "sha256": manifest["sha256"],
+                "license": manifest["license"],
+                "scope": manifest["scope"],
             }
         },
     }

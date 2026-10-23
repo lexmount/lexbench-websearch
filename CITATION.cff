@@ -4,6 +4,21 @@ title: "LexBench Web Search"
 type: software
 version: 0.1.0
 authors:
-  - family-names: LexMount
+  - name: LexMount
 repository-code: "https://github.com/lexmount/lexbench-websearch"
 license: MIT
+references:
+  - type: article
+    title: "SimpleQA Verified: A Reliable Factuality Benchmark to Measure Parametric Knowledge"
+    authors:
+      - family-names: Haas
+        given-names: Lukas
+    identifiers:
+      - type: other
+        value: "arXiv:2509.07968"
+    url: "https://arxiv.org/abs/2509.07968"
+  - type: software
+    title: "websearch-bench"
+    authors:
+      - name: Microck
+    repository-code: "https://github.com/Microck/websearch-bench"

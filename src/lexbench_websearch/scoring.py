@@ -195,11 +195,7 @@ def task_acceptance(
 ):
     if row is None:
         return None
-    if (
-        quality_excluded
-        and "reference_answer" in case
-        and metric in ("primary", "source", "answer")
-    ):
+    if quality_excluded and metric != "availability":
         return None
     if metric == "primary" and relevance_grades is not None:
         return any(g is not None and g >= 2 for g in relevance_grades[:cutoff])

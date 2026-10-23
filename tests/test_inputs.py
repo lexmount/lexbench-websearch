@@ -12,7 +12,8 @@ def test_every_dataset_has_unique_tasks_and_exact_attribution_coverage():
     sources = attribution["sources"]
     attributed = [cid for source in sources for cid in source["case_ids"]]
     tasks = []
-    for identity, binding in inputs.registry()["datasets"].items():
+    for identity in ("scenarios-v1", "factual-v1"):
+        binding = inputs.registry()["datasets"][identity]
         data = inputs.load_dataset(identity)
         assert len(data["cases"]) == binding["count"]
         assert all(
@@ -121,3 +122,34 @@ def test_public_cli_exports_installed_definitions_and_scores(tmp_path):
     assert result.returncode == 0 and json.loads(result.stdout)["precision"] == 0.2
     packet.write_text(json.dumps({"ranking": ["a"], "grades": {"a": 4}}))
     assert call("score", str(packet)).returncode != 0
+
+
+def test_current_scenario_version_contains_qualified_references_and_aliases():
+    original = inputs.load_dataset("scenarios-v1")
+    current = inputs.load_dataset(inputs.registry()["current"]["scenarios"])
+    old = {c["id"]: c for c in original["cases"]}
+    assert [c["id"] for c in current["cases"]] == list(old)
+    assert (
+        sum(
+            bool(c.get("anchors")) and not old[c["id"]].get("anchors")
+            for c in current["cases"]
+        )
+        == 30
+    )
+    assert sum(bool(c.get("identity_aliases")) for c in current["cases"]) == 4
+    validate_cases(
+        current["cases"],
+        reference_checks=current["reference_checks"],
+        reference_scope="identity",
+    )
+    with pytest.raises(FileNotFoundError):
+        inputs.definition_path("missing.json")
+
+
+def test_distribution_contains_no_report_instances_or_approval_lists():
+    for path in inputs.DEFINITIONS.rglob("*.json"):
+        data = json.loads(path.read_bytes())
+        assert "approved_sha256" not in data
+        assert "publication_target" not in data
+        assert "materialized_profiles" not in data
+    assert not inputs.DEFINITIONS.joinpath("assessment-revisions.json").exists()

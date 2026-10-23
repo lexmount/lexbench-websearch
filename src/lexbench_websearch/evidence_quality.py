@@ -5,12 +5,21 @@ Raw results and frozen metrics remain immutable. Exclusions preserve rank slots.
 
 import re
 import unicodedata
+import json
+from functools import cache
 
 from .scoring import factual_evidence
 
 LEGACY_CONTAMINATION_RULE = "simpleqa-name-in-url-or-title/1"
 EVALUATION_FIELDS_RULE = "benchmark-name-or-question-with-evaluation-fields/2"
 CONTAMINATION_RULE = "question-with-evaluation-or-dataset-viewer-structure/3"
+
+
+@cache
+def default_patterns():
+    from .inputs import definition_path
+
+    return json.loads(definition_path("contamination-patterns.json").read_bytes())
 
 
 def is_benchmark_page(result, *, case=None, rule=CONTAMINATION_RULE):
@@ -22,7 +31,11 @@ def is_benchmark_page(result, *, case=None, rule=CONTAMINATION_RULE):
     ):
         raise ValueError("Unsupported factual contamination rule")
     identity = result.get("url", "") + " " + result.get("title", "")
-    if re.search(r"simple[\s_\-]*qa", identity, re.IGNORECASE):
+    patterns = (case or {}).get("contamination_patterns", default_patterns())
+    if any(
+        re.search(pattern, identity, re.IGNORECASE)
+        for pattern in patterns["identity_patterns"]
+    ):
         return True
     if rule == LEGACY_CONTAMINATION_RULE or not case:
         return False
@@ -55,7 +68,9 @@ def is_benchmark_page(result, *, case=None, rule=CONTAMINATION_RULE):
         and re.search(r"expected\s*:", text, re.I)
         and re.search(r"received\s*:", text, re.I)
     )
-    named_benchmark = bool(re.search(r"simple[\s_\-]*qa|super[\s_\-]*gpqa", text, re.I))
+    named_benchmark = any(
+        re.search(pattern, text, re.I) for pattern in patterns["body_patterns"]
+    )
     return evaluation_fields or dataset_viewer or validation_log or named_benchmark
 
 
