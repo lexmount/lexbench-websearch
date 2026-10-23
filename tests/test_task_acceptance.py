@@ -44,11 +44,15 @@ def test_reference_exclusion_preserves_delivery_failures(excluded):
     populated = {"results": [{"url": "https://example.test/"}]}
     for change in ({"http_status": 500}, {"error": "Timeout"}):
         assert classify({}, {**populated, **change}, quality_excluded=excluded) == (
-            "fail", "api_error"
+            "fail",
+            "api_error",
         )
     assert classify({}, {"results": []}, quality_excluded=excluded) == ("fail", "empty")
     if excluded:
-        assert classify({}, populated, quality_excluded=True) == ("probe", "quality_excluded")
+        assert classify({}, populated, quality_excluded=True) == (
+            "probe",
+            "quality_excluded",
+        )
 
 
 def test_benchmark_answer_mirror_does_not_pass_factual_acceptance():
