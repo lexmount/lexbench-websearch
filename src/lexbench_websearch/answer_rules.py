@@ -84,7 +84,7 @@ def _reference_text(reference, derivation=None):
             isinstance(source, dict)
             and urlsplit(source.get("url", "")).scheme == "https"
             and urlsplit(source.get("url", "")).netloc
-            and _norm(value) in _norm(source.get("excerpt", ""))
+            and _phrase(source.get("excerpt", ""), value)
             for source in sources
         )
     ):

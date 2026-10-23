@@ -116,3 +116,35 @@ def test_citation_derivation_requires_matching_reference_and_qualified_source():
     ):
         with pytest.raises(ValueError, match="derivation"):
             reference_rule("42[7]", derivation={**good, **change})
+
+
+@pytest.mark.parametrize(
+    "answer,excerpt,accepted",
+    [
+        ("42", "The value is 42.", True),
+        ("42", "The value is 142.", False),
+        ("150", "The value is 150.", True),
+        ("150", "The value is 150%.", False),
+        ("White", "The stripe is White.", True),
+        ("White", "Whitehead wrote this.", False),
+    ],
+)
+def test_derivation_sources_support_complete_answer_phrases(answer, excerpt, accepted):
+    from lexbench_websearch.contracts import validate_cases
+
+    case = {
+        "id": "source",
+        "reference_answer": answer + "[7]",
+        "answer_derivation": {
+            "reference": answer + "[7]",
+            "derived_answer": answer,
+            "kind": "terminal-citation-metadata",
+            "qualification": "Independently observed source",
+            "sources": [{"url": "https://source.test/", "excerpt": excerpt}],
+        },
+    }
+    if accepted:
+        validate_cases([case])
+    else:
+        with pytest.raises(ValueError, match="derivation"):
+            validate_cases([case])
